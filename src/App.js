@@ -1,11 +1,16 @@
 import React from 'react';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import Home from './Home.js';
+import BlogEntry from './blog/BlogEntry.js';
 import './App.css';
 
 const App = () => (
-  <div>
-    <h1>Carlos Quinones</h1>
-    <p>I'm an Engineering Lead at Knotch in NYC. I love to write music and ride my bike.</p>
-  </div>
+  <Router>
+    <Switch>
+      <Route exact path='/'><Home /></Route>
+      <Route path='/blog/:id' children={<BlogEntry />} />
+    </Switch>
+  </Router>
 );
 
 export default App;

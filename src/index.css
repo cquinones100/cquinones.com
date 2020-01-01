@@ -1,6 +1,10 @@
-
 body {
   background-color: #0f4c81;
   color: white;
   font-family: Verdana, Geneva, sans-serif;
+}
+
+a {
+  text-decoration: none;
+  color: white;
 }
