@@ -13,6 +13,7 @@ const PartyPopper = () => (
 const HappyNewYear = () => {
   return (
     <div>
+      <h2>Happy New Year</h2>
       <PartyPopper />Happy New Year!<PartyPopper />
     </div>
   );
