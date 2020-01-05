@@ -1,4 +1,5 @@
 import React from 'react';
+import Emoji from '../../../Emoji.js';
 
 export const metadata = {
   name: 'Happy New Year',
@@ -7,16 +8,13 @@ export const metadata = {
 };
 
 const PartyPopper = () => (
-  <span role='img' aria-label='party-popper'>🎉</span>
+  <Emoji name='party-popper'>🎉</Emoji>
 );
 
-const HappyNewYear = () => {
-  return (
-    <div>
-      <h2>Happy New Year</h2>
-      <PartyPopper />Happy New Year!<PartyPopper />
-    </div>
-  );
-};
+const HappyNewYear = () => (
+  <div>
+    <PartyPopper />Happy New Year!<PartyPopper />;
+  </div>
+);
 
 export default HappyNewYear;
