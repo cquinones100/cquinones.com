@@ -17,7 +17,7 @@ const Header = ({ siteTitle }) => {
       allImageSharp {
         edges {
           node {
-            resize(width: 100, height: 100, grayscale: false) {
+            resize(width: 113, height: 116, grayscale: false) {
               src
             }
           }
