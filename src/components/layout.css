@@ -8,6 +8,7 @@ body {
 a {
   text-decoration: none;
   color: #d9dcd5;
+  font-weight: bold;
 }
 
 @media only screen and (max-width: 960) {

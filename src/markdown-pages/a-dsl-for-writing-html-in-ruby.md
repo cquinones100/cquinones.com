@@ -3,37 +3,30 @@ path: "/blog/a-dsl-for-writing-html-in-ruby"
 date: "2020-01-05"
 title: "A DSL for Writing HTML in Ruby"
 ---
-In late 2018 I starting working on [RVC]('https://github.com/cquinones100/rvc').
+In late 2018 I starting working on [RVC](https://github.com/cquinones100/rvc).
 The goal was to make using React-style components in Rails easier. The API I landed
- on back then was not as easy as I would have liked, for instance in order to 
- the DSL required an additonal method call in order to write element siblings:
+on back then was not as easy as I would have liked, for instance the DSL
+required an additonal method call in order to write element siblings:
 
 ``` ruby
 class Home < RVC::Component
   def render
     inline do |demo_container|
       demo_container.add do
-        <<~HTML
-          <h1 id='hello'>Hello!</h1>
-        HTML
+        "<h1 id='hello'>Hello!</h1>"
       end
         
       demo_container.add do
-        <<~HTML
-          <div id='enter-your-name'>
-            Enter your name
-          </div>
-        HTML
+        "<div id='enter-your-name'>Enter your name </div>"
       end
-        
-      demo_container.add { TextInput onchange: js_handle_on_change }
     end
   end
 end
 ```
-Here `#inline` is keeping a list of elements to concatenate. I
-think a more user-friendly API would be to allow elements to have the
-component itself keep track:
+
+Here `#inline` is keeping a list of elements to concatenate. I think a more
+user-friendly API would be to allow elements to have the component itself keep
+track:
 
 ``` ruby
 class Home < Rvc::Component
@@ -45,22 +38,27 @@ class Home < Rvc::Component
     div id: 'enter-your-name' do
       'Enter your name'
     end
-
-    TextInput onchange: js_handle_on_change
   end
 end
 ```
+
 Two things need to be implemented to make this change:
 * `RVC::Component` needs to be able to respond to arbitrary methods that correspond to HTML tags.
 * `RVC::Component` needs to keep track of methods called within its `#render` and return the string.
 
 In Ruby, the last value in the method is returned, so that would mean that 
-whatever value is returned by `TextInput onchange: js_handle_on_change`
-will be the rendered. In this case, only the `input` will be rendered.
+whatever value is returned by 
+```ruby
+demo_container.add do
+  "<div id='enter-your-name'>Enter your name </div>"
+end
+```
 
-`RVC::Component`'s `#render` is designed to behave similarly to `React.Component`'s `render()`. React
-requires all sibling elements to be nested within a top-level element, so 
-often the `render()` looks something like:
+will be the rendered. In this case, only that `div` will be rendered.
+
+`RVC::Component`'s `#render` is designed to behave similarly to `React.Component`'s
+`render()`. React requires all sibling elements to be nested within a top-level element,
+so often the `render()` looks something like:
 
 ``` javascript
 render() {
@@ -69,6 +67,19 @@ render() {
       <ElementOne />
       <ElementTwo />
     </div>
+  );
+}
+```
+
+or with a `Fragment`:
+
+```javascript
+render() {
+  return (
+    <>
+      <ElementOne />
+      <ElementTwo />
+    </>
   );
 }
 ```
@@ -107,12 +118,11 @@ end
 
 puts HTMLBuilder.new.render
 ```
-In Rails views, the `#content_tag` method accepts a 
-tag name as its first argument and the body as string or block as a 
-second argument. This method handles arbitrary tag names regardless of
-validity, so `content_tag(:no_tag, 'hi')` will
-return `{`<notag>hi</notag>`}`. I'll
-implement something similar:
+
+In Rails views, the `#content_tag` method accepts a tag name as its first argument
+and the body as string or block as a second argument. This method handles
+arbitrary tag names regardless of validity, so `content_tag(:no_tag, 'hi')` will
+return `<notag>hi</notag>`. I'll implement something similar:
 
 ``` ruby
 class HTMLBuilder
@@ -123,15 +133,14 @@ class HTMLBuilder
   end
 
   def method_missing(method_name, *args, &block)
-    "#{method_name}instance_eval(&block)#{method_name}"
+    "#{method_name}#{instance_eval(&block)}#{method_name}"
   end
 end
 ```
 
-Next I need to handle siblings. This means
-that `HTMLBuilder` needs to store the 
-contructed html. I'll start off with an array and raise an error
-if the array is greater than 1.
+Next I need to handle siblings. This means that `HTMLBuilder` needs to store the 
+contructed html. I'll start off with an array and raise an error if the array
+is greater than 1.
 
 ``` ruby
 class HTMLBuilder
@@ -150,7 +159,7 @@ class HTMLBuilder
   end
 
   def method_missing(method_name, *args, &block)
-    @render_elements << "#{method_name}instance_eval(&block)#{method_name}"
+    @render_elements << "#{method_name}#{instance_eval(&block)}#{method_name}"
 
     if @render_elements.size > 1
       raise 'sibling elements must be nested'
@@ -160,16 +169,14 @@ class HTMLBuilder
   end
 end
 ```
+
 This implementation raises an error 👍
 
-The next step is a little more complex. I'll wrap the body
-of `#render` in a div, but just wrapping
-the siblings in a block is not enough since each method call will add to
-the `#render_elements` array. When the
-outer `#div` method is called, I need to
-instantiate an object that'll keep track of all of the elements generated
-within the block.
-I'll make a `Wrapper` class to handle that.
+The next step is a little more complex. I'll wrap the body of `#render` in a
+div, but just wrapping the siblings in a block is not enough since each
+method call will add to the `#render_elements` array. When the outer `#div`
+method is called, I need to instantiate an object that'll keep track of all of
+the elements generated within the block. I'll make a `Wrapper` class to handle that.
 
 ``` ruby
 class Wrapper
@@ -199,10 +206,10 @@ class Wrapper
 end
 ```
 
-This works when nesting is only one level deep and breaks down at deeper
-levels. A more robust solution will involve defining a base case, that
-describes the very bottom of the nesting. An implementation can involve 
-instantiating a wrapper at each level, and stopping at the bottom.
+This works when nesting is only one level deep and breaks down at deeper levels.
+A more robust solution will involve defining a base case, that describes the
+very bottom of the nesting. An implementation can involve instantiating a
+wrapper at each level, and returning the evaulated block when it is a string.
 First, I'll test the base case:
 
 ``` ruby
@@ -228,7 +235,7 @@ puts Wrapper.new(block: block).to_s
 This works for the base case, but the base case is very different
 from the nested case. The wrapper needs to know when the block is NOT
 only a string. The wrapper knows this if it has to call a method to render
-its block. The `Wrapper` can be changed to handle this:
+its block. The `Wrapper` can be changed to default to the base case:
 
 ``` ruby
 class Wrapper
@@ -257,11 +264,9 @@ class Wrapper
 end
 ```
 
-Next: I have to handle the nested method call
-in `#method_missing`. This is where
-the `Wrapper` needs to keep track of method calls.
-Since we now have a base case, we can instantiate a
-new `Wrapper` and push it into an array:
+Next: I have to handle the nested method call in `#method_missing`. This is where
+the `Wrapper` needs to keep track of method calls. Since we now have a base case,
+we can instantiate a new `Wrapper` and push it into an array:
 
 ``` ruby
 def to_s
@@ -359,8 +364,7 @@ class HTMLBuilder
   attr_reader :render_elements
 end
 
-puts HTMLBuilder.new.render
-# new lines added for clarity
+puts HTMLBuilder.new.render # => # new lines added for clarity
 #
 # <div>
 #   <div>
@@ -370,41 +374,35 @@ puts HTMLBuilder.new.render
 #   <div>hello i am not carlos</div>
 # </div>
 ```
-Using `#method_missing` in this way, is dangerous. Since `HTMLBuilder` is a
-stand in for `Rvc::Component`, other components
-are expected to inherit from this class. I'm eliminating valuable feedback
-that child components will rely on, and any missing method will result in
-changing the `@render_elements` array.
 
-`HTMLBuilder` only needs to
-use `#method_missing` during render.
-One implementation might be to have `#render`
-to be a private method, called as a step in the rendering process, and
-set a `@rendering` flag before
-calling `#render`. The issue with this
-approach is that the render method might rely on methods local to the
-component, and this could make devlopment frustrating when a typo
-causes a new tag to be rendered instead of raising
+Using `#method_missing` in this way, is dangerous. When I integrate this in `RVC`
+I'll replace `HTMLBuilder` with `Rvc::Component` and other components are expected
+to inherit from that class. I'm eliminating valuable feedback that child
+components will rely on, and any missing method will result in changing the
+`@render_elements` array.
+
+`HTMLBuilder` only needs to use `#method_missing` during render.
+One implementation might be to have `#render` to be a private method,
+called as a step in the rendering process, and set a `@rendering` flag before
+calling `#render`. The issue with this approach is that the render method might
+rely on methods local to the component, and this could make devlopment
+frustrating when a typo causes a new tag to be rendered instead of raising
 a `NoMethodError`.
 
 There are a limited set of "valid" HTML tags. In React, I get the
 following warning in the console when I attempt to use a tag that
 is not supported by my browser:
 
-Warning: The tag `{`<notatag>`}` is
-unrecognized in this browser. If you meant to render a React component,
-start its name with an uppercase letter.
+> Warning: The tag `<notatag>` is unrecognized in this browser. If you meant to
+> render a React component, start its name with an uppercase letter.
 
-React's `render()` (and functional components),
-don't behave the
-way `HTMLBuilder`'s `#render` does.
-In Javascript, there is no "implicit return" in a method call, we must always 
-call `return`. I think it might be clearer to push
-the `#method_missing` behavior into an object that
-is instantiated when we `return`
+React's `render()` (and functional components), don't behave the
+way `HTMLBuilder`'s `#render` does. In Javascript, there is no "implicit return"
+in a method call, we must always use `return`. I think it might be clearer to push
+the `#method_missing` behavior into an object that is instantiated when we `return`
 from `#render`.
 
-I think adding a `Renderer` class that First
+I think adding a `Renderer` class that first
 checks if the component responds to a method before creating a tag would work:
 
 ``` ruby
@@ -453,9 +451,8 @@ class HTMLBuilder
 end
 ```
 
-I can put this behavior in
-the `Wrapper` This also 
-removes the reliance on the extraneous wrapper `div`.
+I can put this behavior in the `Wrapper` This also removes the reliance on the
+extraneous wrapper `div`.
 
 ``` ruby
 class Wrapper
@@ -590,3 +587,5 @@ end
 
 puts HTMLBuilder.new.render
 ```
+
+In the next post, I'll integrate this with RVC and share and example.
