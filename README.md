@@ -1,1 +1,1 @@
-This blog was created with [https://www.gatsbyjs.org/](GatsbyJS).
+This blog was created with [GatsbyJS](https://www.gatsbyjs.org/).
