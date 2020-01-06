@@ -586,4 +586,4 @@ end
 puts HTMLBuilder.new.render
 ```
 
-In the next post, I'll integrate this with RVC and share and example.
+In the next post, I'll integrate this with RVC and share an example.
