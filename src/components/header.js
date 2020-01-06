@@ -30,7 +30,10 @@ const Header = ({ siteTitle }) => {
     <header>
       <div style={{ margin: `20px auto`, display: 'flex', flexDirection: 'row' }}>
         <div>
-          <img src={data.allImageSharp.edges[0].node.resize.src} />
+          <img
+            src={data.allImageSharp.edges[0].node.resize.src}
+            alt='Carlos D Quinones'
+          />
         </div>
         <div style={{ marginLeft: '20px' }}>
           <h1><Link to='/'>{siteTitle}</Link></h1>
