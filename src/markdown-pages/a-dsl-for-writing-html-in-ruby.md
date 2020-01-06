@@ -97,8 +97,6 @@ class Home < Rvc::Component
       div id: 'enter-your-name' do
         'Enter your name'
       end
-
-      TextInput onchange: js_handle_on_change
     end
   end
 end
