@@ -48,6 +48,12 @@ const Header = ({ siteTitle }) => {
             >
               LinkedIn
             </a>
+            <a
+              href='https://wyaa.bandcamp.com/releases'
+              style={{ marginLeft: '20px' }}
+            >
+              Bandcamp
+            </a>
           </div>
         </div>
       </div>
