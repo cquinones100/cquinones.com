@@ -74,7 +74,7 @@ app -> (env) do
   end
 end
 
-Rack::Handler::Thing.run app
+Rack::Handler::Thin.run app
 ```
 
 I've set up key values in `routes.yml` for paths -> components. Each request will
