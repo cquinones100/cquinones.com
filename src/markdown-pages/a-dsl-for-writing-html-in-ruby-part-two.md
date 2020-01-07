@@ -12,7 +12,7 @@ I can couple [LiveReload](https://github.com/livereload/livereload-js) with
 
 I want to be able to iterate on RVC quickly and test out functionality without
 all of the overhead of a rails environment. So I'm going to set up a lightweight
-environment using [thin](https://github.com/macournoyer/thin) server. I'll get
+environment using [rack](https://https://github.com/rack/rack) server. I'll get
 started with this basic file structure:
 
 ```
@@ -33,6 +33,7 @@ I'll need the following gems to get this idea going:
 
 ```
   gem 'thin'
+  gem 'rack'
   gem 'guard-livereload'
 ```
 
@@ -42,7 +43,7 @@ I'll require all of the necessary gems in `app.rb`, and I'll start my server wit
 ```ruby
 require './app'
 
-class Adapter
+app -> (env) do
   def call(env)
     load './rvc/component.rb'
     load './rvc/wrapper.rb'
@@ -73,19 +74,12 @@ class Adapter
   end
 end
 
-Thin::Server.start('0.0.0.0', 3000) do
-  use Rack::CommonLogger
-
-  map '/' do
-    run Adapter.new
-  end
-end
+Rack::Handler::Thing.run app
 ```
 
-In the above file, any path will call `#run` with an instance of `Adapter`. The
-instance needs to respondt to `#call` and return the response. I've set up key values
-in `routes.yml` for paths -> components. If a mapping does not exist in `routes.yml`,
-I'll return 404 with 'Not found'.
+I've set up key values in `routes.yml` for paths -> components. Each request will
+find and call render on the component mapped to the path. If a mapping does
+not exist in `routes.yml`, I'll return 404 with 'Not found'.
 
 For now, `root` maps to the `Home` component:
 
@@ -113,22 +107,22 @@ Now, to get LiveReload going, I have to inject the livereload script into every 
 <script src="http://localhost:35729/livereload.js"></script>
 ```
 
-To do this, I'll make sure the script is included in every request by updating the body array returned by the `Adapter` instance in `server.rb`:
+To do this, I'll make sure the script is included in every request by updating the body array returned by the rack app in `server.rb`:
 
 ```ruby
-    body = [LiveReload.new.render]
+  body = [LiveReload.new.render]
 
-    begin
-      component_body = Object.const_get(component).new.render
-    rescue 
-      return [404, { 'Content-Type' => 'text/plain' }, body + ['Not found']]
-    end
+  begin
+    component_body = Object.const_get(component).new.render
+  rescue 
+    return [404, { 'Content-Type' => 'text/plain' }, body + ['Not found']]
+  end
 
-    [
-      200,
-      { 'Content-Type' => 'text/html' },
-      body + [component_body]
-    ]
+  [
+    200,
+    { 'Content-Type' => 'text/html' },
+    body + [component_body]
+  ]
 ```
 
 and the `LiveReload` component will look like this:
