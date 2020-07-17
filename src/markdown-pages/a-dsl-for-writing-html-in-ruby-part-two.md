@@ -43,35 +43,33 @@ I'll require all of the necessary gems in `app.rb`, and I'll start my server wit
 ```ruby
 require './app'
 
-app -> (env) do
-  def call(env)
-    load './rvc/component.rb'
-    load './rvc/wrapper.rb'
+app = -> (env) do
+  load './rvc/component.rb'
+  load './rvc/wrapper.rb'
 
-    routes = YAML.load_file('./routes.yml')
+  routes = YAML.load_file('./routes.yml')
 
-    Dir['./src/components/**/*.rb'].each { |file| load file }
+  Dir['./src/components/**/*.rb'].each { |file| load file }
 
-    path = env["REQUEST_PATH"]
+  path = env["REQUEST_PATH"]
 
-    component = if path == '/'
-                  routes['root']
-                else
-                  routes[path]
-                end
+  component = if path == '/'
+                routes['root']
+              else
+                routes[path]
+              end
 
-    begin
-      component_body = Object.const_get(component).new.render
-    rescue 
-      return [404, { 'Content-Type' => 'text/plain' }, ['Not found']]
-    end
-
-    [
-      200,
-      { 'Content-Type' => 'text/html' },
-      [component_body]
-    ]
+  begin
+    component_body = Object.const_get(component).new.render
+  rescue 
+    return [404, { 'Content-Type' => 'text/plain' }, ['Not found']]
   end
+
+  [
+    200,
+    { 'Content-Type' => 'text/html' },
+    [component_body]
+  ]
 end
 
 Rack::Handler::Thin.run app
