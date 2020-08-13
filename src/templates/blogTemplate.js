@@ -3,6 +3,7 @@ import Layout from '../components/layout';
 import SEO from '../components/seo';
 import { graphql } from 'gatsby';
 import Image from '../components/Image';
+import Helmet from 'react-helmet';
 
 const BINARY_OBJECTIONS_TITLE = 'Binary Objections';
 
@@ -12,11 +13,21 @@ export default function Template({ data }) {
   const { title } = frontmatter;
 
   if (title === BINARY_OBJECTIONS_TITLE) {
-    document.body.style.backgroundColor = 'white';
-    document.body.style.margin = 0;
-    document.body.style.maxWidth = '100vw';
-
-    return <Image/>
+    return(
+      <>
+        <Helmet>
+          <script type='text/javascript'>
+            {`(function(document) {
+              console.log('hi');
+              document.body.style.backgroundColor = 'white';
+              document.body.style.margin = 0;
+              document.body.style.maxWidth = '100vw';
+            })(document);`}
+          </script>
+        </Helmet>
+        <Image/>
+      </>
+    )
   }
 
   return (
