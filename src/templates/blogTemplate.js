@@ -12,9 +12,9 @@ export default function Template({ data }) {
   const { title } = frontmatter;
 
   if (title === BINARY_OBJECTIONS_TITLE) {
-    window.document.body.style.backgroundColor = 'white';
-    window.document.body.style.margin = 0;
-    window.document.body.style.maxWidth = '100vw';
+    document.body.style.backgroundColor = 'white';
+    document.body.style.margin = 0;
+    document.body.style.maxWidth = '100vw';
 
     return <Image/>
   }
