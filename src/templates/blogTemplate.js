@@ -15,16 +15,16 @@ export default function Template({ data }) {
   if (title === BINARY_OBJECTIONS_TITLE) {
     return(
       <>
-        <Helmet>
-          <script type='text/javascript'>
-            {`(function(document) {
-              console.log('hi');
+          <script
+            type='text/javascript'
+            dangerouslySetInnerHTML={{ __html: 
+              `
               document.body.style.backgroundColor = 'white';
               document.body.style.margin = 0;
               document.body.style.maxWidth = '100vw';
-            })(document);`}
+            `}}
+          >
           </script>
-        </Helmet>
         <Image/>
       </>
     )
