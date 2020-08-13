@@ -28,7 +28,7 @@ const IndexPage = ({ data }) => {
 
 export const blogPostQuery = graphql`
   query MyQuery {
-    postsData: allMarkdownRemark(sort: {fields: frontmatter___date, order: DESC}, filter: {}) {
+    postsData: allMarkdownRemark(sort: {fields: frontmatter___date, order: DESC}, filter: {frontmatter: {title: {ne: "Binary Objections"}}}) {
       posts: nodes {
         metadata: frontmatter {
           date
