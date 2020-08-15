@@ -3,7 +3,6 @@ import Layout from '../components/layout';
 import SEO from '../components/seo';
 import { graphql } from 'gatsby';
 import Image from '../components/Image';
-import Helmet from 'react-helmet';
 
 const BINARY_OBJECTIONS_TITLE = 'Binary Objections';
 

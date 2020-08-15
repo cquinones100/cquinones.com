@@ -18,8 +18,6 @@ const Image = () => {
       }
     }`)
   
-    console.log(data.images)
-
   return (
     data.images.edges.map(({ node: image }, index) => {
       return <Img key={index} fluid={image.childImageSharp.fluid} objectFit='cover' />
